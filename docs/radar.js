@@ -169,7 +169,7 @@ function radar_visualization(config) {
   // partition entries according to segments
   var segmented = new Array(8);
   for (var quadrant = 0; quadrant < 8; quadrant++) {
-    segmented[quadrant] = new Array(8);
+    segmented[quadrant] = new Array(4);
     for (var ring = 0; ring < 4; ring++) {
       segmented[quadrant][ring] = [];
     }
