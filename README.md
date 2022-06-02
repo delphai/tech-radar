@@ -1,8 +1,6 @@
 # Motivation
 
-At [Zalando](http://zalando.de), we maintain a [public Tech
-Radar](http://zalando.github.io/tech-radar/) to help our engineering teams
-align on technology choices. It is based on the [pioneering work
+This is a fork from [Zalando](http://zalando.de) tech radar. It is based on the [pioneering work
 by ThoughtWorks](https://www.thoughtworks.com/radar).
 
 This repository contains the code to generate the visualization:
@@ -11,57 +9,41 @@ Feel free to use and adapt it for your own purposes.
 
 ## Usage
 
-1. include `d3.js` and `radar.js`:
+Input data should look like following: 
 
-```html
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="http://zalando.github.io/tech-radar/release/radar-0.6.js"></script>
 ```
-
-2. insert an empty `svg` tag:
-
-```html
-<svg id="radar"></svg>
-```
-
-3. configure the radar visualization:
-
-```js
-radar_visualization({
-  svg_id: "radar",
-  width: 1450,
-  height: 1000,
-  colors: {
-    background: "#fff",
-    grid: "#bbb",
-    inactive: "#ddd"
-  },
-  title: "My Radar",
-  quadrants: [
-    { name: "Bottom Right" },
-    { name: "Bottom Left" },
-    { name: "Top Left" },
-    { name: "Top Right" }
-  ],
-  rings: [
-    { name: "INNER",  color: "#93c47d" },
-    { name: "SECOND", color: "#b7e1cd" },
-    { name: "THIRD",  color: "#fce8b2" },
-    { name: "OUTER",  color: "#f4c7c3" }
-  ],
-  print_layout: true,
-  entries: [
-   {
-      label: "Some Entry",
-      quadrant: 3,          // 0,1,2,3 (counting clockwise, starting from bottom right)
-      ring: 2,              // 0,1,2,3 (starting from inside)
-      moved: -1             // -1 = moved out (triangle pointing down)
-                            //  0 = not moved (circle)
-                            //  1 = moved in  (triangle pointing up)
-   },
-    // ...
-  ]
-});
+{'quadrants': [{'name': 'Advanced robotics'},
+  {'name': 'Artificial intelligence'},
+  {'name': 'End-to-end connectivity'},
+  {'name': 'Consistent planning'},
+  {'name': 'Lifelong learning '},
+  {'name': 'Sustainable production'},
+  {'name': 'Digital twin'},
+  {'name': 'Integrated logistics'}],
+ 'rings': [{'name': 'Adopt', 'color': '#00C4B5'},
+  {'name': 'Trial', 'color': '#00A1FF'},
+  {'name': 'Assess', 'color': '#3679D5'},
+  {'name': 'Observe', 'color': '#222530'}],
+ 'entries': [{'link': '5b23bccab6fa1e2f73019f29',
+   'label': 'Easby Electronics',
+   'quadrant': 0,
+   'ring': 3,
+   'active': True,
+   'moved': 0},
+  {'link': '5c7e809e3807d8150ff4b92f',
+   'label': 'hanneung electronics co.,ltd',
+   'quadrant': 0,
+   'ring': 3,
+   'active': True,
+   'moved': 0},
+  {'link': '5b1aaef372cc30742ea1b258',
+   'label': 'Amantys',
+   'quadrant': 0,
+   'ring': 3,
+   'active': True,
+   'moved': 0},
+   ...
+   ]}
 ```
 
 Entries are positioned automatically so that they don't overlap.
