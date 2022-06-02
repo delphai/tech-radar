@@ -41,10 +41,18 @@ function radar_visualization(config) {
 
   // radial_min / radial_max are multiples of PI
   const quadrants = [
-    { radial_min: 0, radial_max: 0.5, factor_x: 1, factor_y: 1 },
-    { radial_min: 0.5, radial_max: 1, factor_x: -1, factor_y: 1 },
-    { radial_min: -1, radial_max: -0.5, factor_x: -1, factor_y: -1 },
-    { radial_min: -0.5, radial_max: 0, factor_x: 1, factor_y: -1 }
+    // { radial_min: 0, radial_max: 0.5, factor_x: 1, factor_y: 1 },
+    // { radial_min: 0.5, radial_max: 1, factor_x: -1, factor_y: 1 },
+    // { radial_min: -1, radial_max: -0.5, factor_x: -1, factor_y: -1 },
+    // { radial_min: -0.5, radial_max: 0, factor_x: 1, factor_y: -1 }
+    { radial_min: 0, radial_max: 0.24, factor_x: 1, factor_y: 1 },
+    { radial_min: 0.26, radial_max: 0.49, factor_x: 1, factor_y: 1 },
+    { radial_min: 0.51, radial_max: 0.74, factor_x: -1, factor_y: 1 },
+    { radial_min: 0.76, radial_max: 1, factor_x: -1, factor_y: 1 },
+    { radial_min: -1, radial_max: -0.76, factor_x: -1, factor_y: -1 },
+    { radial_min: -0.74, radial_max: -0.51, factor_x: -1, factor_y: -1 },
+    { radial_min: -0.49, radial_max: -0.26, factor_x: 1, factor_y: -1 },
+    { radial_min: -0.24, radial_max: 0, factor_x: 1, factor_y: -1 }
   ];
 
   const rings = [
@@ -61,10 +69,15 @@ function radar_visualization(config) {
     { x: -675, y: 420 };
 
   const legend_offset = [
-    { x: 450, y: 90 },
-    { x: -675, y: 90 },
-    { x: -675, y: -310 },
-    { x: 450, y: -310 }
+    { x: 450, y: 70 },
+    { x: 450, y: 260 },
+    { x: -675, y: 260 },
+    { x: -675, y: 70 },
+    { x: -675, y: -120 },
+    { x: -675, y: -320 },
+    { x: 450, y: -320 },
+    { x: 450, y: -120 }
+
   ];
 
   function polar(cartesian) {
@@ -121,19 +134,19 @@ function radar_visualization(config) {
       y: rings[3].radius * quadrants[quadrant].factor_y
     };
     return {
-      clipx: function(d) {
+      clipx: function (d) {
         var c = bounded_box(d, cartesian_min, cartesian_max);
         var p = bounded_ring(polar(c), polar_min.r + 15, polar_max.r - 15);
         d.x = cartesian(p).x; // adjust data too!
         return d.x;
       },
-      clipy: function(d) {
+      clipy: function (d) {
         var c = bounded_box(d, cartesian_min, cartesian_max);
         var p = bounded_ring(polar(c), polar_min.r + 15, polar_max.r - 15);
         d.y = cartesian(p).y; // adjust data too!
         return d.y;
       },
-      random: function() {
+      random: function () {
         return cartesian({
           t: random_between(polar_min.t, polar_max.t),
           r: normal_between(polar_min.r, polar_max.r)
@@ -154,25 +167,25 @@ function radar_visualization(config) {
   }
 
   // partition entries according to segments
-  var segmented = new Array(4);
-  for (var quadrant = 0; quadrant < 4; quadrant++) {
-    segmented[quadrant] = new Array(4);
+  var segmented = new Array(8);
+  for (var quadrant = 0; quadrant < 8; quadrant++) {
+    segmented[quadrant] = new Array(8);
     for (var ring = 0; ring < 4; ring++) {
       segmented[quadrant][ring] = [];
     }
   }
-  for (var i=0; i<config.entries.length; i++) {
+  for (var i = 0; i < config.entries.length; i++) {
     var entry = config.entries[i];
     segmented[entry.quadrant][entry.ring].push(entry);
   }
 
   // assign unique sequential id to each entry
   var id = 1;
-  for (var quadrant of [2,3,1,0]) {
+  for (var quadrant of [7, 6, 5, 4, 3, 2, 1, 0]) {
     for (var ring = 0; ring < 4; ring++) {
       var entries = segmented[quadrant][ring];
-      entries.sort(function(a,b) { return a.label.localeCompare(b.label); })
-      for (var i=0; i<entries.length; i++) {
+      entries.sort(function (a, b) { return a.label.localeCompare(b.label); })
+      for (var i = 0; i < entries.length; i++) {
         entries[i].id = "" + id++;
       }
     }
@@ -216,6 +229,18 @@ function radar_visualization(config) {
     .attr("x2", 400).attr("y2", 0)
     .style("stroke", config.colors.grid)
     .style("stroke-width", 1);
+  grid.append("line")
+    .attr("x1", 0).attr("y1", -400)
+    .attr("x2", 0).attr("y2", 400)
+    .style("stroke", config.colors.grid)
+    .style("stroke-width", 1)
+    .attr("transform", "rotate(45,0,0)")
+  grid.append("line")
+    .attr("x1", -400).attr("y1", 0)
+    .attr("x2", 400).attr("y2", 0)
+    .style("stroke", config.colors.grid)
+    .style("stroke-width", 1)
+    .attr("transform", "rotate(45,0,0)");
 
   // background color. Usage `.attr("filter", "url(#solid)")`
   // SOURCE: https://stackoverflow.com/a/31013492/2609980
@@ -254,11 +279,11 @@ function radar_visualization(config) {
     }
   }
 
-  function legend_transform(quadrant, ring, index=null) {
-    var dx = ring < 2 ? 0 : 120;
-    var dy = (index == null ? -16 : index * 12);
-    if (ring % 2 === 1) {
-      dy = dy + 36 + segmented[quadrant][ring-1].length * 12;
+  function legend_transform(quadrant, ring_no, index = null) {
+    var dx = ring_no < 2 ? 0 : 120;
+    var dy = (index == null ? -12 : index * 12);
+    if (ring_no % 2 === 1) {
+    dy = dy + 40 + segmented[quadrant][ring_no - 1].length * 6;
     }
     return translate(
       legend_offset[quadrant].x + dx,
@@ -286,18 +311,20 @@ function radar_visualization(config) {
 
     // legend
     var legend = radar.append("g");
-    for (var quadrant = 0; quadrant < 4; quadrant++) {
+    for (var quadrant = 0; quadrant < 8; quadrant++) {
       legend.append("text")
         .attr("transform", translate(
           legend_offset[quadrant].x,
-          legend_offset[quadrant].y - 45
+          legend_offset[quadrant].y - 34
         ))
         .text(config.quadrants[quadrant].name)
         .style("font-family", "Arial, Helvetica")
         .style("font-size", "18px");
+      let ring_no = 0;
       for (var ring = 0; ring < 4; ring++) {
+        if (segmented[quadrant][ring].length != 0) {
         legend.append("text")
-          .attr("transform", legend_transform(quadrant, ring))
+          .attr("transform", legend_transform(quadrant, ring_no))
           .text(config.rings[ring].name)
           .style("font-family", "Arial, Helvetica")
           .style("font-size", "12px")
@@ -305,19 +332,21 @@ function radar_visualization(config) {
         legend.selectAll(".legend" + quadrant + ring)
           .data(segmented[quadrant][ring])
           .enter()
-            .append("a")
-                .attr("href", function (d, i) {
-                  return d.link ? d.link : "#"; // stay on same page if no link was provided
-                })
-            .append("text")
-              .attr("transform", function(d, i) { return legend_transform(quadrant, ring, i); })
-              .attr("class", "legend" + quadrant + ring)
-              .attr("id", function(d, i) { return "legendItem" + d.id; })
-              .text(function(d, i) { return d.id + ". " + d.label; })
-              .style("font-family", "Arial, Helvetica")
-              .style("font-size", "11px")
-              .on("mouseover", function(d) { showBubble(d); highlightLegendItem(d); })
-              .on("mouseout", function(d) { hideBubble(d); unhighlightLegendItem(d); });
+          .append("a")
+          .attr("href", function (d, i) {
+            return d.link ? "https://app.delphai.com/micro-view/"+ d.link : "#"; // stay on same page if no link was provided
+          })
+          .append("text")
+          .attr("transform", function (d, i) { return legend_transform(quadrant, ring_no, i); })
+          .attr("class", "legend" + quadrant + ring)
+          .attr("id", function (d, i) { return "legendItem" + d.id; })
+          .text(function (d, i) { return d.id + ". " + d.label; })
+          .style("font-family", "Arial, Helvetica")
+          .style("font-size", "11px")
+          .on("mouseover", function (d) { showBubble(d); highlightLegendItem(d); })
+          .on("mouseout", function (d) { hideBubble(d); unhighlightLegendItem(d); });
+        ring_no++;
+        }
       }
     }
   }
@@ -366,7 +395,7 @@ function radar_visualization(config) {
 
   function hideBubble(d) {
     var bubble = d3.select("#bubble")
-      .attr("transform", translate(0,0))
+      .attr("transform", translate(0, 0))
       .style("opacity", 0);
   }
 
@@ -386,20 +415,20 @@ function radar_visualization(config) {
   var blips = rink.selectAll(".blip")
     .data(config.entries)
     .enter()
-      .append("g")
-        .attr("class", "blip")
-        .attr("transform", function(d, i) { return legend_transform(d.quadrant, d.ring, i); })
-        .on("mouseover", function(d) { showBubble(d); highlightLegendItem(d); })
-        .on("mouseout", function(d) { hideBubble(d); unhighlightLegendItem(d); });
+    .append("g")
+    .attr("class", "blip")
+    // .attr("transform", function (d, i) { return legend_transform(d.quadrant, d.ring, i); })
+    .on("mouseover", function (d) { showBubble(d); highlightLegendItem(d); })
+    .on("mouseout", function (d) { hideBubble(d); unhighlightLegendItem(d); });
 
   // configure each blip
-  blips.each(function(d) {
+  blips.each(function (d) {
     var blip = d3.select(this);
 
     // blip link
     if (!config.print_layout && d.active && d.hasOwnProperty("link")) {
       blip = blip.append("a")
-        .attr("xlink:href", d.link);
+      .attr("xlink:href", d.link);
     }
 
     // blip shape
@@ -426,7 +455,7 @@ function radar_visualization(config) {
         .attr("text-anchor", "middle")
         .style("fill", "#fff")
         .style("font-family", "Arial, Helvetica")
-        .style("font-size", function(d) { return blip_text.length > 2 ? "8px" : "9px"; })
+        .style("font-size", function (d) { return blip_text.length > 2 ? "8px" : "9px"; })
         .style("pointer-events", "none")
         .style("user-select", "none");
     }
@@ -434,7 +463,7 @@ function radar_visualization(config) {
 
   // make sure that blips stay inside their segment
   function ticked() {
-    blips.attr("transform", function(d) {
+    blips.attr("transform", function (d) {
       return translate(d.segment.clipx(d), d.segment.clipy(d));
     })
   }
@@ -443,6 +472,6 @@ function radar_visualization(config) {
   d3.forceSimulation()
     .nodes(config.entries)
     .velocityDecay(0.19) // magic number (found by experimentation)
-    .force("collision", d3.forceCollide().radius(12).strength(0.85))
+    .force("collision", d3.forceCollide().radius(6).strength(0.50))
     .on("tick", ticked);
 }
